@@ -37,7 +37,7 @@ pub fn fannkuch_sequential(n: usize) -> (i32, i32) {
             temp_permutation[i - d + 1..=i].copy_from_slice(&current_permutation[..d]);
             current_permutation = temp_permutation;
 
-            permutation_index = permutation_index % f;
+            permutation_index %= f;
         }
     }
 
