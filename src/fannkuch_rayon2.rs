@@ -7,7 +7,7 @@ use rayon::prelude::*;
 // the number of permutations is lower than this value.
 const NUM_BLOCKS: u32 = 24;
 
-pub fn fannkuch_rayon(n: usize) -> (i32, i32) {
+pub fn fannkuch_rayon2(n: usize) -> (i32, i32) {
     // Precompute a table a factorials to reuse all over the place.
     let mut factorials = [1; 16];
     for i in 1..n as usize + 1 {
@@ -129,10 +129,10 @@ pub fn fannkuch_rayon(n: usize) -> (i32, i32) {
 
 #[cfg(test)]
 mod tests {
-    use crate::fannkuch_rayon;
+    use crate::fannkuch_rayon2;
 
     #[test]
     fn test_rayon() {
-        assert_eq!(fannkuch_rayon(7), (228, 16));
+        assert_eq!(fannkuch_rayon2(7), (228, 16));
     }
 }

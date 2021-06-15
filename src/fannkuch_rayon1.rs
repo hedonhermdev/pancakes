@@ -4,7 +4,6 @@ use std::{
     mem::replace,
 };
 
-const BLOCK_SIZE: usize = 1000;
 const MAX_N: usize = 16;
 
 struct State {
@@ -23,7 +22,7 @@ impl State {
     }
 }
 
-pub fn fannkuch_adaptive(n: usize) -> (i32, i32) {
+pub fn fannkuch_rayon1(n: usize) -> (i32, i32) {
     let factorial_lookup_table = {
         let mut table: [usize; MAX_N] = [0; MAX_N];
         table[0] = 1;
@@ -35,7 +34,6 @@ pub fn fannkuch_adaptive(n: usize) -> (i32, i32) {
 
     (0..factorial_lookup_table[n])
         .into_par_iter()
-        .adaptive(BLOCK_SIZE)
         .scan(
             State::new,
             |state, k| {
@@ -146,10 +144,10 @@ pub fn fannkuch_adaptive(n: usize) -> (i32, i32) {
 
 #[cfg(test)]
 mod tests {
-    use super::fannkuch_adaptive;
+    use super::fannkuch_rayon1;
 
     #[test]
-    fn test_adaptive() {
-        assert_eq!(fannkuch_adaptive(7), (228, 16));
+    fn test_rayon1() {
+        assert_eq!(fannkuch_rayon1(7), (228, 16));
     }
 }
