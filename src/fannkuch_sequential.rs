@@ -43,9 +43,6 @@ pub fn fannkuch_sequential(n: usize) -> (i32, i32) {
 
     let mut max_flip_count = 0;
     let mut checksum = 0;
-
-    println!("N: {} P(N): {}", n, factorial_lookup_table[n]);
-
     // Iterate over each permutation in the block.
     for permutation_index in 0..factorial_lookup_table[n] {
         // If the first value in the current_permutation is not 1 (0)
@@ -92,9 +89,6 @@ pub fn fannkuch_sequential(n: usize) -> (i32, i32) {
             } else {
                 checksum -= flip_count;
             }
-
-            println!("fc: {}", flip_count);
-
             // Update max_flip_count if necessary.
             max_flip_count = max_flip_count.max(flip_count);
         }

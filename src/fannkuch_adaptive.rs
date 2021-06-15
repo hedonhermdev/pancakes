@@ -4,12 +4,13 @@ use std::{
     mem::replace,
 };
 
-const BLOCK_SIZE: usize = 10000;
+const BLOCK_SIZE: usize = 1000;
 const MAX_N: usize = 16;
 
 struct State {
     count: [usize; MAX_N],
     current_perm: [u8; MAX_N],
+    temp_perm: [u8; MAX_N],
     new: bool,
 }
 
@@ -18,6 +19,7 @@ impl State {
         Self {
             count: [0; MAX_N],
             current_perm: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+            temp_perm: [0; MAX_N],
             new: true,
         }
     }
@@ -40,7 +42,6 @@ pub fn fannkuch_adaptive(n: usize) -> (i32, i32) {
             State::new,
             |state, k| {
                 if state.new {
-                    println!("new state");
                     state.new = false;
                     let mut temp_perm: [u8; MAX_N] = [0; MAX_N];
                     let mut permutation_index = k;
