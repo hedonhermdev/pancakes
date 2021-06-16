@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use pancakes::*;
-use std::{fs::{File, OpenOptions}, io::Write, ops::Range, time};
+use std::{fs::File, io::Write, ops::RangeInclusive, time};
 
 fn timed<T>(body: impl FnOnce() -> T) -> (T, std::time::Duration) { let start = time::Instant::now();
     let result = body();
@@ -11,19 +11,21 @@ fn timed<T>(body: impl FnOnce() -> T) -> (T, std::time::Duration) { let start = 
 fn bench(
     outfile: &mut File,
     algname: &str,
-    input_sizes: Range<usize>,
+    input_sizes: RangeInclusive<usize>,
     repetitions: usize,
+    num_threads: usize,
 ) -> Result<()> {
-    let num_threads = rayon::current_num_threads();
+    let tp = rayon::ThreadPoolBuilder::new().num_threads(num_threads).build()?;
+    let num_threads = tp.current_num_threads();
     let mut buf = String::new();
     for n in input_sizes.clone() {
         for _ in 0..repetitions {
-            let ((_, result), time_taken) = match algname {
+            let ((_, result), time_taken) = tp.install(|| match algname {
                 "rayon1" => timed(|| fannkuch_rayon1(n)),
                 "rayon2" => timed(|| fannkuch_rayon2(n)),
                 "adaptive" => timed(|| fannkuch_adaptive(n)),
                 _ => timed(|| fannkuch_sequential(n)),
-            };
+            });
 
             let entry = format!(
                 "{},{},{},{},{}\n",
@@ -38,7 +40,7 @@ fn bench(
         }
     }
     outfile
-        .write(buf.as_bytes())
+        .write_all(buf.as_bytes())
         .context("Failed to write entry to file")?;
 
     Ok(())
@@ -47,12 +49,17 @@ fn bench(
 fn main() -> Result<()> {
     let mut f = File::create("results.csv")?;
 
-    f.write("num_threads,N,algorithm,result,time\n".as_bytes())?;
+    f.write_all("num_threads,N,algorithm,result,time\n".as_bytes())?;
 
-    bench(&mut f, "adaptive", 12..13, 30)?;
-    bench(&mut f, "rayon1", 12..13, 30)?;
-    bench(&mut f, "rayon2", 12..13, 30)?;
-    bench(&mut f, "sequential", 12..13, 30)?;
+    let num_cpus = num_cpus::get();
+
+    let algs = ["adaptive", "rayon1", "rayon2", "sequential"];
+    
+    for alg in &algs {
+        for num_threads in (1..=num_cpus).rev() {
+            bench(&mut f, alg, 6..=12, 30, num_threads)?;
+        }
+    }
 
     Ok(())
 }
