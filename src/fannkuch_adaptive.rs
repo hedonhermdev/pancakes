@@ -4,7 +4,8 @@ use std::{
     mem::replace,
 };
 
-const BLOCK_SIZE: usize = 1000;
+use tracing::{Level, span};
+
 const MAX_N: usize = 16;
 
 struct State {
@@ -23,7 +24,7 @@ impl State {
     }
 }
 
-pub fn fannkuch_adaptive(n: usize) -> (i32, i32) {
+pub fn fannkuch_adaptive(n: usize, block_size: usize) -> (i32, i32) {
     let factorial_lookup_table = {
         let mut table: [usize; MAX_N] = [0; MAX_N];
         table[0] = 1;
@@ -33,13 +34,17 @@ pub fn fannkuch_adaptive(n: usize) -> (i32, i32) {
         table
     };
 
-    (0..factorial_lookup_table[n])
+    let perm = factorial_lookup_table[n];
+    (0..perm)
         .into_par_iter()
-        .adaptive(BLOCK_SIZE)
+        .adaptive(block_size)
         .scan(
             State::new,
             |state, k| {
                 if state.new {
+                    let span = span!(Level::TRACE, "init");
+                    let _guard = span.enter();
+
                     state.new = false;
                     let mut temp_perm: [u8; MAX_N] = [0; MAX_N];
                     let mut permutation_index = k;
@@ -150,6 +155,6 @@ mod tests {
 
     #[test]
     fn test_adaptive() {
-        assert_eq!(fannkuch_adaptive(7), (228, 16));
+        assert_eq!(fannkuch_adaptive(7, 1000), (228, 16));
     }
 }

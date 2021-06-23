@@ -38,6 +38,7 @@ pub fn fannkuch_rayon1(n: usize) -> (i32, i32) {
             State::new,
             |state, k| {
                 if state.new {
+                    println!("reinit");
                     state.new = false;
                     let mut temp_perm: [u8; MAX_N] = [0; MAX_N];
                     let mut permutation_index = k;

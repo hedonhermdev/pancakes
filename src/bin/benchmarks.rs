@@ -23,7 +23,7 @@ fn bench(
             let ((_, result), time_taken) = tp.install(|| match algname {
                 "rayon1" => timed(|| fannkuch_rayon1(n)),
                 "rayon2" => timed(|| fannkuch_rayon2(n)),
-                "adaptive" => timed(|| fannkuch_adaptive(n)),
+                "adaptive" => timed(|| fannkuch_adaptive(n, 1000)),
                 _ => timed(|| fannkuch_sequential(n)),
             });
 
@@ -57,7 +57,7 @@ fn main() -> Result<()> {
     
     for alg in &algs {
         for num_threads in (1..=num_cpus).rev() {
-            bench(&mut f, alg, 6..=12, 30, num_threads)?;
+            bench(&mut f, alg, 6..=12, 10, num_threads)?;
         }
     }
 
